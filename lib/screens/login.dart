@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'signup.dart';
+import '../api_server.dart'; // Import your API server file
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -12,17 +13,35 @@ class _LoginState extends State<Login> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void loginhandling() {
-    final email = emailController.text.trim();
-    final password = passwordController.text;
+  String message = '';
 
-    debugPrint("Login with : $email/$password");
+  void loginhandling() async {
+    final result = await ApiServer.login(
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    );
+    if (!mounted) return;
+    setState(() {
+      message = result['message'];
+    });
+
+    if (result['success']) {
+      Navigator.pushNamed(context, '/home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.tealAccent,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
+
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
